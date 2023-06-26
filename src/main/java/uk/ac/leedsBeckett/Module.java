@@ -8,18 +8,16 @@ public class Module {
     private static org.apache.log4j.Logger log = Logger.getLogger(Module.class);
     private String id;
     private String name;
-    private boolean isClosed;
+    private boolean isOpen;
 
     public Module() {
         super();
-        log.debug("Instance of Module created using no-argument constructor.");
     }
 
-    public Module(String id, String name, boolean isClosed) {
+    public Module(String id, String name, boolean isOpen) {
         this.id = id;
         this.name = name;
-        this.isClosed = isClosed;
-        log.debug("Instance of Module created using three arguments constructor.");
+        this.isOpen = isOpen;
     }
 
     @Override
@@ -55,11 +53,11 @@ public class Module {
         this.name = name;
     }
 
-    public boolean isClosed() {
-        return isClosed;
+    public boolean isOpen() {
+        return isOpen;
     }
 
-    public void setClosed(boolean closed) {
-        this.isClosed = closed;
+    public void setOpen(boolean open) {
+        this.isOpen = open;
     }
 }

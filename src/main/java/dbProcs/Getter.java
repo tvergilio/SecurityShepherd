@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.owasp.encoder.Encode;
+import uk.ac.leedsBeckett.Module;
 
 import utils.ScoreboardStatus;
 
@@ -55,6 +56,29 @@ public class Getter
 	private static int majorCap = 175;
 	
 	private static int admiralCap = 999; //everything above Major is Admiral
+
+
+	public static ArrayList<Module> getAllModules(String ApplicationRoot) {
+		log.debug("*** Getter.getAllModules ***");
+		ArrayList<Module> modules = new ArrayList<>();
+
+		try (Connection conn = Database.getCoreConnection(ApplicationRoot); CallableStatement callstmt = conn.prepareCall("call moduleAllStatus()")) {
+			log.debug("Gathering moduleAllStatus ResultSet");
+			ResultSet resultSet = callstmt.executeQuery();
+			log.debug("Opening Result Set from moduleAllStatus");
+
+			while (resultSet.next()) {
+				modules.add(new Module(resultSet.getString(1),
+						resultSet.getString(2),
+						"open".equals(resultSet.getString(3))));
+			}
+			log.debug("Returning Array list with " + modules.size() + " entries.");
+		} catch (SQLException e) {
+			log.error("Could not execute query: " + e.toString());
+		}
+		log.debug("*** END getAllModules ***");
+		return modules;
+	}
 	
 	/**
 	 * This method hashes the user submitted password and sends it to the database.
@@ -224,7 +248,7 @@ public class Getter
 		log.debug("*** END findPlayerById ***");
 		return userFound;
 	}
-	
+
 	/**
 	 * Used to gather all module information for internal functionality. This method is used in creating View's or in control class operations
 	 * @param ApplicationRoot The current runing context of the application
