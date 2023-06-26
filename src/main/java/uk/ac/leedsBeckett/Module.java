@@ -10,6 +10,8 @@ public class Module {
     private String name;
     private boolean isOpen;
 
+    private String flag;
+
     public Module() {
         super();
     }
@@ -56,8 +58,13 @@ public class Module {
     public boolean isOpen() {
         return isOpen;
     }
-
     public void setOpen(boolean open) {
         this.isOpen = open;
+    }
+    public String getFlag() {
+        return flag;
+    }
+    public void setFlag(String flag) {
+        this.flag = flag;
     }
 }

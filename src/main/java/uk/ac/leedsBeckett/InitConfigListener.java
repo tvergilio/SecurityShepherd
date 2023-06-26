@@ -16,14 +16,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class InitConfigListener implements ServletContextListener, HttpSessionListener, HttpSessionAttributeListener {
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(InitConfigListener.class);
+
+    public static final String MODULES_CONFIG_PATH = "/WEB-INF/classes/active-modules";
+    public static final String FLAGS_CONFIG_PATH = "/WEB-INF/classes/flags";
     private static List<Module> modules;
+    private static Queue<String> flags;
 
     public InitConfigListener() {
     }
@@ -38,8 +45,29 @@ public class InitConfigListener implements ServletContextListener, HttpSessionLi
         //Close all modules by default
         Setter.closeAllModules(applicationRoot);
 
-        //Activate only specified modules
+        //Check external config files exist and have the same number of lines
+        checkConfigFiles(applicationRoot);
+
+        //Populate flags from config file
+        populateFlags(applicationRoot);
+
+        //Activate specified modules and assign flags
         activateModules(applicationRoot);
+    }
+
+    private void checkConfigFiles(String applicationRoot) {
+        Path moduleConfig = Paths.get(applicationRoot, MODULES_CONFIG_PATH);
+        Path flagConfig = Paths.get(applicationRoot, FLAGS_CONFIG_PATH);
+
+        log.debug("File exists: " + Files.exists(moduleConfig));
+        log.debug("File exists: " + Files.exists(flagConfig));
+        try {
+            assert Files.lines(moduleConfig).count() == Files.lines(flagConfig).count();
+        } catch (Exception e) {
+            log.debug("The number of flags does not correspond to the number of modules open. " +
+                    "Please check the configuration files provided.");
+            e.printStackTrace();
+        }
     }
 
     private void populateModulesFromDatabase(String applicationRoot) {
@@ -65,17 +93,30 @@ public class InitConfigListener implements ServletContextListener, HttpSessionLi
     }
 
     private void activateModules(String applicationRoot) {
-        Path configFilePath = Paths.get(applicationRoot + "/WEB-INF/classes/active-modules");
-        log.debug("File path is: " + configFilePath);
-        log.debug("File path exists: " + Files.exists(configFilePath));
+        Path configFilePath = Paths.get(applicationRoot, MODULES_CONFIG_PATH);
 
         try (Stream<String> lines = Files.lines(configFilePath)) {
             lines.map(s -> getModuleByName(s, applicationRoot))
                     .filter(Objects::nonNull)
-                    .peek(m -> log.debug("Module to open: " + m.getName()))
-                    .forEach(module -> Setter.setModuleStatusOpen(applicationRoot, module.getId()));
+                    .peek(m -> log.debug("Assigning flag to module: " + m.getName()))
+                    .peek(m -> m.setFlag(flags.poll()))
+                    .forEach(module -> {
+                        Setter.setModuleStatusOpen(applicationRoot, module.getId());
+                        log.debug("Module: " + module.getName() + " open "
+                                + module.getFlag());
+                    });
         } catch (IOException e) {
-            log.debug("Could not activate modules from config file: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void populateFlags(String applicationRoot) {
+        Path configFilePath = Paths.get(applicationRoot, FLAGS_CONFIG_PATH);
+        log.debug("Populating flags from config file: " + configFilePath);
+
+        try (Stream<String> lines = Files.lines(configFilePath)) {
+            flags = lines.collect(Collectors.toCollection(ArrayDeque::new));
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
