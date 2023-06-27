@@ -33,12 +33,14 @@ public class HacktivityConfigListener implements ServletContextListener, HttpSes
     private static List<Module> modules;
     private static Queue<String> flags;
 
+    private String applicationRoot;
+
     public HacktivityConfigListener() {
     }
 
     @Override
     public void contextInitialized(ServletContextEvent event) {
-        String applicationRoot = getApplicationRoot(event.getServletContext());
+        applicationRoot = getApplicationRoot(event.getServletContext());
 
         //Change mode to Open Floor to enable challenges to be completed in any order
         ModulePlan.setOpenFloor();
@@ -50,16 +52,23 @@ public class HacktivityConfigListener implements ServletContextListener, HttpSes
         Setter.closeAllModules(applicationRoot);
 
         //Check external config files exist and have the same number of lines
-        checkConfigFiles(applicationRoot);
+        checkConfigFiles();
 
         //Populate flags from config file
-        populateFlags(applicationRoot);
+        populateFlags();
 
         //Activate specified modules and assign flags
-        activateModules(applicationRoot);
+        activateModules();
     }
 
-    private void checkConfigFiles(String applicationRoot) {
+    public static String getFlagForModule(String moduleName) {
+        Module module = getModule(moduleName);
+        assert module != null;
+        log.debug("Module " + module.getName() + " found.");
+        return module.getFlag();
+    }
+
+    private void checkConfigFiles() {
         Path moduleConfig = Paths.get(applicationRoot, MODULES_CONFIG_PATH);
         Path flagConfig = Paths.get(applicationRoot, FLAGS_CONFIG_PATH);
 
@@ -74,14 +83,7 @@ public class HacktivityConfigListener implements ServletContextListener, HttpSes
         }
     }
 
-    public static String getFlagForModule(String moduleName) {
-        Module module = getModule(moduleName);
-        assert module != null;
-        log.debug("Module " + module.getName() + " found.");
-        return module.getFlag();
-    }
-
-    private void populateModulesFromDatabase(String applicationRoot) {
+    private void populateModulesFromDatabase() {
         modules = Getter.getAllModules(applicationRoot);
     }
 
@@ -89,10 +91,10 @@ public class HacktivityConfigListener implements ServletContextListener, HttpSes
         return context.getRealPath("");
     }
 
-    private Module getModuleByName(String name, String applicationRoot) {
+    private Module getModuleByName(String name) {
         if (modules == null || modules.isEmpty()) {
             log.debug("Populating modules from database.");
-            populateModulesFromDatabase(applicationRoot);
+            populateModulesFromDatabase();
         }
         return getModule(name);
     }
@@ -107,11 +109,11 @@ public class HacktivityConfigListener implements ServletContextListener, HttpSes
         return null;
     }
 
-    private void activateModules(String applicationRoot) {
+    private void activateModules() {
         Path configFilePath = Paths.get(applicationRoot, MODULES_CONFIG_PATH);
 
         try (Stream<String> lines = Files.lines(configFilePath)) {
-            lines.map(s -> getModuleByName(s, applicationRoot))
+            lines.map(this::getModuleByName)
                     .filter(Objects::nonNull)
                     .peek(m -> log.debug("Assigning flag to module: " + m.getName()))
                     .peek(m -> m.setFlag(flags.poll()))
@@ -125,7 +127,7 @@ public class HacktivityConfigListener implements ServletContextListener, HttpSes
         }
     }
 
-    private void populateFlags(String applicationRoot) {
+    private void populateFlags() {
         Path configFilePath = Paths.get(applicationRoot, FLAGS_CONFIG_PATH);
         log.debug("Populating flags from config file: " + configFilePath);
 
