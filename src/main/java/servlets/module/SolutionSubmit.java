@@ -15,6 +15,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.owasp.encoder.Encode;
 
+import uk.ac.leedsBeckett.HacktivityConfigListener;
 import utils.FeedbackStatus;
 import utils.Hash;
 import utils.ShepherdLogManager;
@@ -142,7 +143,9 @@ public class SolutionSubmit extends HttpServlet
 										log.debug("Solution Submission for module " + compltedModuleLocalName + " succeeded");
 										htmlOutput = new String("<h2 class=\"title\">Solution Submission Success</h2><br>" +
 												"<p>" +
-												compltedModuleLocalName + " completed! Congratulations.");
+												compltedModuleLocalName + " completed! Congratulations.<br/>" +
+												"<p>Here is your Hacktivity flag: </p>" +
+												"<h2>" + HacktivityConfigListener.getFlagForModule(moduleId) + "</h2><br/>");
 										htmlOutput += "</p>";
 										//Refresh Side Menu
 										htmlOutput += FeedbackSubmit.refreshMenuScript(Encode.forHtml((String)tokenParmeter), "Refresh Error");
@@ -166,7 +169,9 @@ public class SolutionSubmit extends HttpServlet
 								out.write("<h2 class=\"title\">Haven't You Done This Already?</h2><br>" +
 										"<p>" +
 										"Our records say you have already completed this module! Go try another one!" +
-										"</p>");
+										"</p>" +
+										"<p>Here is your Hacktivity flag: </p>" +
+										"<h2>" + HacktivityConfigListener.getFlagForModule(moduleId) + "</h2><br/>");
 							}
 						}
 						else

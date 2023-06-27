@@ -61,10 +61,11 @@ public class HacktivityConfigListener implements ServletContextListener, HttpSes
         activateModules();
     }
 
-    public static String getFlagForModule(String moduleName) {
-        Module module = getModule(moduleName);
+    public static String getFlagForModule(String moduleId) {
+        log.debug("Getting flag for module with id " + moduleId);
+        Module module = getModuleById(moduleId);
         assert module != null;
-        log.debug("Module " + module.getName() + " found.");
+        log.debug("Module " + module.getId() + " found.");
         return module.getFlag();
     }
 
@@ -91,15 +92,15 @@ public class HacktivityConfigListener implements ServletContextListener, HttpSes
         return context.getRealPath("");
     }
 
-    private Module getModuleByName(String name) {
+    private Module getModule(String name) {
         if (modules == null || modules.isEmpty()) {
             log.debug("Populating modules from database.");
             populateModulesFromDatabase();
         }
-        return getModule(name);
+        return getModuleByName(name);
     }
 
-    private static Module getModule(String name) {
+    private static Module getModuleByName(String name) {
         for (Module module : modules) {
             if (module.getName().equals(name)) {
                 return module;
@@ -108,12 +109,21 @@ public class HacktivityConfigListener implements ServletContextListener, HttpSes
         log.debug("Module " + name + " not found.");
         return null;
     }
+    private static Module getModuleById(String id) {
+        for (Module module : modules) {
+            if (module.getId().equals(id)) {
+                return module;
+            }
+        }
+        log.debug("Module " + id + " not found.");
+        return null;
+    }
 
     private void activateModules() {
         Path configFilePath = Paths.get(applicationRoot, MODULES_CONFIG_PATH);
 
         try (Stream<String> lines = Files.lines(configFilePath)) {
-            lines.map(this::getModuleByName)
+            lines.map(this::getModule)
                     .filter(Objects::nonNull)
                     .peek(m -> log.debug("Assigning flag to module: " + m.getName()))
                     .peek(m -> m.setFlag(flags.poll()))
