@@ -4,6 +4,7 @@ import dbProcs.Getter;
 import dbProcs.Setter;
 import org.apache.log4j.Logger;
 import utils.ModulePlan;
+import utils.ScoreboardStatus;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -41,6 +42,9 @@ public class InitConfigListener implements ServletContextListener, HttpSessionLi
 
         //Change mode to Open Floor to enable challenges to be completed in any order
         ModulePlan.setOpenFloor();
+
+        //Disable scoreboard
+        ScoreboardStatus.disableScoreboard();
 
         //Close all modules by default
         Setter.closeAllModules(applicationRoot);
