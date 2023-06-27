@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.owasp.encoder.Encode;
 
 
+import uk.ac.leedsBeckett.HacktivityConfigListener;
 import utils.Hash;
 import utils.ShepherdLogManager;
 import utils.Validate;
@@ -46,6 +47,7 @@ public class SecurityMisconfigLesson extends HttpServlet
 	private static String levelName = "Security Misconfig Lesson";
 	public static String levelhash = "fe04648f43cdf2d523ecf1675f1ade2cde04a7a2e9a7f1a80dbb6dc9f717c833";
 	private static String levelResult = "55b34717d014a5a355f6eced4386878fab0b2793e1d1dbfd23e6262cd510ea96";
+	public static final String moduleName = "Security Misconfiguration";
 	
 	public void doPost (HttpServletRequest request, HttpServletResponse response) 
 	throws ServletException, IOException
@@ -91,6 +93,7 @@ public class SecurityMisconfigLesson extends HttpServlet
 					log.debug("User has signed in as admin");
 					htmlOutput = "<h2 class='title'>" + bundle.getString("response.authSuccess") + "</h2><p>"
 							+ bundle.getString("result.youDidIt") + "<br><br>"
+							+ "<h2>" + HacktivityConfigListener.getFlagForModule(moduleName) + "</h2>"
 							+ bundle.getString("result.key") + ": <a>" + Hash.generateUserSolution(levelResult, ses.getAttribute("userName").toString()) + "</a>";
 				}
 				log.debug("Outputting HTML");

@@ -30,7 +30,7 @@
 	</env-entry>
 
 	<listener>
-		<listener-class>uk.ac.leedsBeckett.InitConfigListener</listener-class>
+		<listener-class>uk.ac.leedsBeckett.HacktivityConfigListener</listener-class>
 	</listener>
 
 	<servlet>

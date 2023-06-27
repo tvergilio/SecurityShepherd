@@ -24,16 +24,16 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class InitConfigListener implements ServletContextListener, HttpSessionListener, HttpSessionAttributeListener {
+public class HacktivityConfigListener implements ServletContextListener, HttpSessionListener, HttpSessionAttributeListener {
 
-    private static final org.apache.log4j.Logger log = Logger.getLogger(InitConfigListener.class);
+    private static final org.apache.log4j.Logger log = Logger.getLogger(HacktivityConfigListener.class);
 
     public static final String MODULES_CONFIG_PATH = "/WEB-INF/classes/active-modules";
     public static final String FLAGS_CONFIG_PATH = "/WEB-INF/classes/flags";
     private static List<Module> modules;
     private static Queue<String> flags;
 
-    public InitConfigListener() {
+    public HacktivityConfigListener() {
     }
 
     @Override
@@ -74,6 +74,13 @@ public class InitConfigListener implements ServletContextListener, HttpSessionLi
         }
     }
 
+    public static String getFlagForModule(String moduleName) {
+        Module module = getModule(moduleName);
+        assert module != null;
+        log.debug("Module " + module.getName() + " found.");
+        return module.getFlag();
+    }
+
     private void populateModulesFromDatabase(String applicationRoot) {
         modules = Getter.getAllModules(applicationRoot);
     }
@@ -87,6 +94,10 @@ public class InitConfigListener implements ServletContextListener, HttpSessionLi
             log.debug("Populating modules from database.");
             populateModulesFromDatabase(applicationRoot);
         }
+        return getModule(name);
+    }
+
+    private static Module getModule(String name) {
         for (Module module : modules) {
             if (module.getName().equals(name)) {
                 return module;
