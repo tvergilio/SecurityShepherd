@@ -12,6 +12,10 @@ services:
         DOCKER_NETWORK_NAME: ${DOCKER_NETWORK_NAME}
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASS}
+    command: [
+      '--wait_timeout=10',
+      '--interactive_timeout=10'
+    ]
   web:
     image: ${IMAGE_TOMCAT}
     container_name: ${CONTAINER_TOMCAT}
