@@ -16,6 +16,10 @@ services:
         DOCKER_NETWORK_NAME: ${DOCKER_NETWORK_NAME}
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASS}
+    command: [
+      '--wait_timeout=10',
+      '--interactive_timeout=10'
+    ]
     ports:
       - "${DB_SERVER_MAPPED_HOST}:${DB_PORT_MAPPED_HOST}:3306"
   mongo:

@@ -21,6 +21,7 @@ import utils.Hash;
 import utils.InvalidCountdownStateException;
 import utils.ShepherdLogManager;
 import utils.Validate;
+import uk.ac.leedsBeckett.HacktivityConfigListener;
 
 /**
  * Control class that returns a feedback form for users if they submit the correct solution <br>
@@ -158,7 +159,9 @@ public class SolutionSubmit extends HttpServlet {
                           "<h2 class=\"title\">Solution Submission Success</h2><br>"
                               + "<p>"
                               + compltedModuleLocalName
-                              + " completed! Congratulations.");
+                              + " completed! Congratulations.<br/>"
+                              + "<p>Here is your Hacktivity flag: </p>"
+                              + "<h2>" + HacktivityConfigListener.getFlagForModule(moduleId) + "</h2><br/>");
                   htmlOutput += "</p>";
                   // Refresh Side Menu
                   htmlOutput +=
@@ -180,7 +183,10 @@ public class SolutionSubmit extends HttpServlet {
               log.error("User has completed this module before. Returning Error");
               out.write(
                   "<h2 class=\"title\">Haven't You Done This Already?</h2><br><p>Our records say"
-                      + " you have already completed this module! Go try another one!</p>");
+                      + " you have already completed this module! Go try another one!"
+                      + "</p>"
+                      + "<p>Here is your Hacktivity flag: </p>"
+                      + "<h2>" + HacktivityConfigListener.getFlagForModule(moduleId) + "</h2><br/>");
             }
           } else {
             log.error("Incorrect key submitted, returning error");

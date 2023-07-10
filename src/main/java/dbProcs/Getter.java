@@ -21,6 +21,7 @@ import org.owasp.encoder.Encode;
 import servlets.Register;
 import utils.ModulePlan;
 import utils.ScoreboardStatus;
+import uk.ac.leedsBeckett.Module;
 
 /**
  * Used to retrieve information from the Database <br>
@@ -59,6 +60,28 @@ public class Getter {
   private static final int majorCap = 175;
 
   private static final int admiralCap = 999; // everything above Major is Admiral
+
+  public static ArrayList<Module> getAllModules(String ApplicationRoot) {
+    log.debug("*** Getter.getAllModules ***");
+    ArrayList<Module> modules = new ArrayList<>();
+
+    try (Connection conn = Database.getCoreConnection(ApplicationRoot); CallableStatement callstmt = conn.prepareCall("call moduleAllStatus()")) {
+      log.debug("Gathering moduleAllStatus ResultSet");
+      ResultSet resultSet = callstmt.executeQuery();
+      log.debug("Opening Result Set from moduleAllStatus");
+
+      while (resultSet.next()) {
+        modules.add(new Module(resultSet.getString(1),
+                resultSet.getString(2),
+                "open".equals(resultSet.getString(3))));
+      }
+      log.debug("Returning Array list with " + modules.size() + " entries.");
+    } catch (SQLException e) {
+      log.error("Could not execute query: " + e.toString());
+    }
+    log.debug("*** END getAllModules ***");
+    return modules;
+  }
 
   /**
    * This method hashes the user submitted password and sends it to the database. The database does
